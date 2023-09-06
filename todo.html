@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<script>
+// Function to fetch and display the todo list
+function getData() {
+    fetch("http://localhost:3000/todos", {
+        method: "GET"
+    })
+    .then(response => response.json())
+    .then(callback3) // Call the callback function with the retrieved data
+    .catch(error => console.error("Error:", error));
+}
+
+// Function to delete a todo item by ID
+function deleteTodo(id) {
+    console.log(id);
+    fetch("http://localhost:3000/todos/" + id, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            // If the deletion was successful, remove the item from the DOM
+            const todoItem = document.getElementById("todo-" + id);
+            if (todoItem) {
+                todoItem.remove();
+            }
+            console.log("Item deleted successfully");
+        } else {
+            console.error("Failed to delete item");
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+    });
+}
+
+// Callback function to display the todo list data
+function callback3(data) {
+    var parent = document.getElementById("show");
+    parent.innerHTML = ''; // Clear the existing content
+    for (var i = 0; i < data.length; i++) {
+        var marginLeft = document.createElement("span");
+        marginLeft.style.marginLeft = "10px";
+        var a = document.createElement("div");
+        a.id = "todo-" + data[i].id; // Set a unique ID for each todo item
+
+        var child1 = document.createElement("span");
+        child1.innerHTML = data[i].title;
+        a.appendChild(child1);
+        a.appendChild(marginLeft);
+
+        var child2 = document.createElement("span");
+        child2.innerHTML = data[i].description;
+        a.appendChild(marginLeft);
+        a.appendChild(child2);
+
+        var child3 = document.createElement("button");
+        child3.innerHTML = "Delete";
+        child3.setAttribute("onclick", "deleteTodo(" + data[i].id + ")");
+        a.appendChild(marginLeft);
+        a.appendChild(child3);
+
+        parent.appendChild(a);
+        var margin = document.createElement("div");
+        margin.style.marginBottom = "10px";
+        parent.appendChild(margin);
+    }
+}
+
+// Initial data retrieval when the page loads
+getData();
+
+// Function to handle the "send todo" button click
+function onpress() {
+    var title = document.getElementById("title").value;
+    var description = document.getElementById("description").value;
+    fetch("http://localhost:3000/todos", {
+        method: "POST",
+        body: JSON.stringify({
+            title: title,
+            description: description
+        }),
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
+    .then(jsoncall)
+    .catch(error => console.error("Error:", error));
+}
+
+// Function to process JSON response
+function jsoncall(res) {
+    res.json().then(read);
+}
+
+// Function to handle reading data after a new item is added
+function read(data) {
+    console.log(data);
+    getData(); // Refresh the todo list after adding a new item
+}
+
+</script>
+<body>
+    <!-- Input fields for todo title and description -->
+    Todo title
+    <input type="text" id="title"></input>
+    <br><br>
+    Todo description
+    <input type="text" id="description"></input>
+    <br><br>
+    <!-- Button to trigger adding a new todo item -->
+    <button onclick="onpress()">send todo</button>
+    <div>
+        <!-- Container to display the todo list -->
+        <span id="show"></span>
+    </div>
+</body>
+</html>
